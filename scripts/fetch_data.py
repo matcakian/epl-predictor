@@ -1,42 +1,36 @@
 import json
 
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-
+from seleniumwire import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 
 import time
 
 
-options = webdriver.ChromeOptions()
-options.set_capability(
-	'goog:loggingPrefs', {"performance": "ALL", "browser": "ALL"}
-)
-
-driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), 
-	options=options)
+options = {
+	'disable_encoding': True,
+	'cache_path': None
+}
 
 
-driver.set_page_load_timeout(20)
+driver = webdriver.Chrome(seleniumwire_options=options)
+
+
+# driver.set_page_load_timeout(10)
 
 try:
 	driver.get("https://www.sofascore.com/football/match/inter-miami-cf-new-york-red-bulls/gabsccKc#id:11911622")
 except:
 	pass
 
-driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+for i in range(0, 5):
+    driver.execute_script("window.scrollBy(0, 400);")
+    time.sleep(1)
 
 
-logs_raw = driver.get_log("performance")
-logs = [json.loads(log['message'])['message'] for log in logs_raw]
+for request in driver.requests:
+	if request.response and "shotmap" in request.url:
+		print("URL:", request.url)
+		# print("Response:", request.response)
 
 
-for log in logs:
-	# if 'shotmap' in log['params'].get('headers', {}).get(':path', ''):
-	# 	print(log['params'].get('headers', {}).get(':path', ''))
-	# 	break
-	pass
-
-
-# input("Press enter to close the browser...")
-# driver.quit()
+driver.quit()
